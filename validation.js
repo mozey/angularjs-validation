@@ -1,6 +1,11 @@
 (function() {
     'use strict';
 
+    // By default validation only starts after calling validation.validate,
+    // usually that is done when the form is first submitted.
+    // Afterwards elements will be validated as they are changed
+    var validationEnabled = false;
+
     // Would be easy to do with jQuery: elem.is(":visible")
     // Better way to do this in Angular?
     function isVisible(elem) {
@@ -112,7 +117,10 @@
 
         // Show validation tooltip by default, requires angular-ui
         // The tooltip attribute must be set to a property on the scope.
-        var tooltip = attrs["tooltip"];
+        // Name of the property differs between version of UI Bootstrap
+        var tooltip = attrs["tooltip"]
+            ? attrs["tooltip"] // Older versions
+            : attrs["uibTooltip"]; // Newer
         if (tooltip) {
             // Get property name of tooltip message.
             var r = new RegExp("{{([\\w,\\.]*)}}");
@@ -146,7 +154,9 @@
 
             // This enables display of a default tooltip if no validation error
             if (tooltip) {
-                var tooltipDefault = scope[tooltip] || "";
+                // Reading scope[tooltip] won't work
+                // if tooltip contains a dot
+                var tooltipDefault = $parse(tooltip)(scope) || "";
             }
 
             var setDirty = function() {
@@ -156,6 +166,11 @@
             };
 
             var validateElement = function(stopPropagation) {
+                if (!validationEnabled) {
+                    // Do not validate until this flag is set
+                    return;
+                }
+
                 // False if any rule linked to the element fails
                 var valid = true;
                 // Will be set to the message of the last invalid rule
@@ -214,7 +229,7 @@
 
                 if (tooltip) {
                     if (valid) {
-                    scope[tooltip] = tooltipDefault;
+                        scope[tooltip] = tooltipDefault;
                     } else {
                         if (typeof message === "string") {
                             // Use $parse in case tooltip contains a dot,
@@ -269,6 +284,10 @@
     // .........................................................................
     function validation($rootScope, $timeout) {
         var self = this;
+
+        this.enableValidation = function() {
+            validationEnabled = true;
+        };
 
         // Messages can be changed on the fly.
         // This is useful, for example, in a language manager service
@@ -407,6 +426,7 @@
         * @param scope
         */
         this.validate = function(scope) {
+            self.setEnabled();
             scope.$broadcast("validate");
         };
     }

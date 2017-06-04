@@ -1,3 +1,7 @@
+<!--
+Simple example for https://github.com/mozey/angularjs-validation
+---------------------------------------------------------------------------- -->
+
 <!doctype html>
 <html ng-app="app" lang="en">
 <head>
@@ -5,49 +9,64 @@
     <title>Simple Form</title>
 
     <style>
-        input.ng-invalid.ng-dirty,
-        select.ng-invalid.ng-dirty,
-        textarea.ng-invalid.ng-dirty {
-            background: #ffb6c1;
-            border: 1px solid #cd5c5c;
-        }
-        input.ng-invalid.ng-dirty:focus,
-        select.ng-invalid.ng-dirty:focus,
-        textarea.ng-invalid.ng-dirty:focus {
-            -webkit-box-shadow: none;
-            box-shadow: none;
+        form label {
+            width: 100px;
         }
     </style>
+
+    <link href="../lib/bootstrap-3.3.7/css/bootstrap.css" rel="stylesheet">
+    <link href="../lib/bootstrap-3.3.7/css/bootstrap-theme.css" rel="stylesheet">
+    <link href="../validation.css" rel="stylesheet">
 </head>
 <body>
 
-<div ng-controller="MainController">
+<div class="container" ng-controller="MainController">
+    <br>
     <form action="javascript:" ng-submit="submit()" name="simpleForm">
+        <span>Hover over inputs to see tooltips</span><br>
+        <span>The name input has a default tooltip</span><br>
+        <span>Click on submit to see validation messages</span>
+        <br>
+        <br>
         <label for="data.name">Name</label>
+        <!-- required is a built in validation rule -->
         <input type="text"
                id="data.name"
                ng-model="data.name" name="data.name" validate="required"
-               uib-tooltip="{{data.tooltip.name}}">
+               data-uib-tooltip="{{data.tooltip.name}}"
+               data-tooltip-placement="right">
+        <br>
         <br>
         <label for="data.number">Number</label>
+        <!-- number is a built in validation rule -->
         <input type="text"
                id="data.number"
                ng-model="data.number" name="data.number" validate="number"
-               uib-tooltip="{{data.tooltip.number}}">
+               data-uib-tooltip="{{data.tooltip.number}}"
+               data-tooltip-placement="right">
+        <br>
         <br>
         <label for="data.email">Email</label>
+        <!-- validEmail is a custom validation rule, see below -->
         <input type="text"
                id="data.email"
                ng-model="data.email" name="data.email" validate="validEmail"
-               uib-tooltip="{{data.tooltip.email}}">
+               data-uib-tooltip="{{data.tooltip.email}}"
+               data-tooltip-placement="right">
+        <br>
         <br>
         <button type="submit">Submit</button>
     </form>
 </div>
 
 <script src="../lib/angular-1.6.4.js"></script>
-<script src="../lib/ui-bootstrap-tpls-2.5.0.js"></script>
 <script src="../validation.js"></script>
+
+<!--
+UI Bootstrap 2.5.0 works with Bootstrap CSS version 3.3.7,
+see https://angular-ui.github.io/bootstrap
+-->
+<script src="../lib/ui-bootstrap-tpls-2.5.0.js"></script>
 
 <script>
 
@@ -61,7 +80,25 @@
     var MainController = function ($scope, validation) {
         console.info("MainController");
 
-        $scope.data = {};
+
+        // By default validation only starts after calling validation.validate,
+        // usually that is done when the form is first submitted.
+        // Afterwards elements will be validated as they are changed.
+        // To start validating straight away call the function below.
+        //validation.enableValidation();
+
+        // It's a good idea to always wrap simple data on the scope in an object
+        // see discussion about angular scopes here
+        // https://github.com/angular/angular.js/wiki/Understanding-Scopes
+        $scope.data = {
+            tooltip: {
+                // Default message will be swapped out with validation message
+                number: "Default message"
+            }
+        };
+
+        // validEmail is a custom validation rule,
+        // remember to set a validation message and always return a boolean
         $scope.validEmail = {
             validate: function (val) {
                 console.info("validEmail.validate: val = ", val);
@@ -74,6 +111,7 @@
             }
         };
 
+        // Call the validate function before submit to check all rules again
         $scope.submit = function () {
             validation.validate($scope);
             console.info("Submit: $scope.simpleForm.$valid =", $scope.simpleForm.$valid);

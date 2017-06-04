@@ -1,0 +1,43 @@
+/*
+Minimal styling for https://github.com/mozey/angularjs-validation
+***************************************************************************** */
+
+input.ng-invalid.ng-dirty,
+select.ng-invalid.ng-dirty,
+textarea.ng-invalid.ng-dirty {
+    background: #ffb6c1;
+    border: 1px solid #cd5c5c;
+}
+
+input.ng-invalid.ng-dirty:focus,
+select.ng-invalid.ng-dirty:focus,
+textarea.ng-invalid.ng-dirty:focus {
+    -webkit-box-shadow: none;
+    box-shadow: none;
+}
+
+.ng-invalid + .tooltip {
+    /*width: 150px;*/
+}
+
+.ng-invalid + .tooltip.top .tooltip-arrow {
+    border-top-color: #fceedb;
+}
+
+.ng-invalid + .tooltip.right .tooltip-arrow {
+    border-right-color: #fceedb;
+}
+
+.ng-invalid + .tooltip.left .tooltip-arrow {
+    border-left-color: #fceedb;
+}
+
+.ng-invalid + .tooltip.bottom .tooltip-arrow {
+    border-bottom-color: #fceedb;
+}
+
+.ng-invalid + .tooltip .tooltip-inner {
+    background: #fceedb;
+    color: #d9534f;
+    font-weight: bold;
+}
