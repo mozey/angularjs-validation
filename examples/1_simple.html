@@ -1,0 +1,92 @@
+<!doctype html>
+<html ng-app="app" lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Simple Form</title>
+
+    <style>
+        input.ng-invalid.ng-dirty,
+        select.ng-invalid.ng-dirty,
+        textarea.ng-invalid.ng-dirty {
+            background: #ffb6c1;
+            border: 1px solid #cd5c5c;
+        }
+        input.ng-invalid.ng-dirty:focus,
+        select.ng-invalid.ng-dirty:focus,
+        textarea.ng-invalid.ng-dirty:focus {
+            -webkit-box-shadow: none;
+            box-shadow: none;
+        }
+    </style>
+</head>
+<body>
+
+<div ng-controller="MainController">
+    <form action="javascript:" ng-submit="submit()" name="simpleForm">
+        <label for="data.name">Name</label>
+        <input type="text"
+               id="data.name"
+               ng-model="data.name" name="data.name" validate="required"
+               uib-tooltip="{{data.tooltip.name}}">
+        <br>
+        <label for="data.number">Number</label>
+        <input type="text"
+               id="data.number"
+               ng-model="data.number" name="data.number" validate="number"
+               uib-tooltip="{{data.tooltip.number}}">
+        <br>
+        <label for="data.email">Email</label>
+        <input type="text"
+               id="data.email"
+               ng-model="data.email" name="data.email" validate="validEmail"
+               uib-tooltip="{{data.tooltip.email}}">
+        <br>
+        <button type="submit">Submit</button>
+    </form>
+</div>
+
+<script src="../lib/angular-1.6.4.js"></script>
+<script src="../lib/ui-bootstrap-tpls-2.5.0.js"></script>
+<script src="../validation.js"></script>
+
+<script>
+
+    angular.module('app', [
+        'ui.bootstrap',
+        'validation'
+    ]);
+
+    angular.module('app.controllers', []);
+
+    var MainController = function ($scope, validation) {
+        console.info("MainController");
+
+        $scope.data = {};
+        $scope.validEmail = {
+            validate: function (val) {
+                console.info("validEmail.validate: val = ", val);
+                // Set message to be displayed if validation fails
+                $scope.validEmail.message =
+                    "Must be an email address";
+                var r = /^[a-zA-Z0-9.!#$%&’*+/=?^_`{|}~-]+@[a-zA-Z0-9-]+(?:\.[a-zA-Z0-9-]+)*$/;
+                // Return value must be true or false
+                return Boolean(String(val).match(r));
+            }
+        };
+
+        $scope.submit = function () {
+            validation.validate($scope);
+            console.info("Submit: $scope.simpleForm.$valid =", $scope.simpleForm.$valid);
+            if ($scope.simpleForm.$valid) {
+                alert("form is valid");
+            }
+        };
+    };
+
+    angular.module("app")
+        .controller("MainController", ["$scope", "validation", MainController]);
+
+</script>
+
+</body>
+</html>
