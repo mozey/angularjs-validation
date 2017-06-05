@@ -426,7 +426,7 @@
         * @param scope
         */
         this.validate = function(scope) {
-            self.setEnabled();
+            self.enableValidation();
             scope.$broadcast("validate");
         };
     }
