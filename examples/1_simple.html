@@ -57,6 +57,39 @@ Simple example for https://github.com/mozey/angularjs-validation
         <br>
         <button type="submit">Submit</button>
     </form>
+    <br>
+
+    <form action="javascript:" ng-submit="submit2()" name="simpleForm2">
+        <span>Only one of the inputs below have to be filled in</span><br>
+        <br>
+        <br>
+        <label for="data.firstName">First Name</label>
+        <input type="text"
+               id="data.firstName"
+               ng-model="data.firstName" name="data.firstName" validate="validSimpleForm2"
+               data-uib-tooltip="{{data.tooltip.firstName}}"
+               data-tooltip-placement="right">
+        <br>
+        <br>
+        <label for="data.surname">Surname</label>
+        <input type="text"
+               id="data.surname"
+               ng-model="data.surname" name="data.surname" validate="validSimpleForm2"
+               data-uib-tooltip="{{data.tooltip.surname}}"
+               data-tooltip-placement="right">
+        <br>
+        <br>
+        <label for="data.company">First Name</label>
+        <input type="text"
+               id="data.company"
+               ng-model="data.company" name="data.company" validate="validSimpleForm2"
+               data-uib-tooltip="{{data.tooltip.company}}"
+               data-tooltip-placement="right">
+        <br>
+        <br>
+
+        <button type="submit">Submit</button>
+    </form>
 </div>
 
 <script src="../lib/angular-1.6.4.js"></script>
@@ -91,9 +124,20 @@ see https://angular-ui.github.io/bootstrap
         // see discussion about angular scopes here
         // https://github.com/angular/angular.js/wiki/Understanding-Scopes
         $scope.data = {
+            name: "",
+            number: "",
+            email: "",
+            firstName: "",
+            surname: "",
+            company: "",
             tooltip: {
                 // Default message will be swapped out with validation message
-                number: "Default message"
+                name: "",
+                number: "Default message",
+                email: "",
+                firstName: "",
+                surname: "",
+                company: ""
             }
         };
 
@@ -111,12 +155,36 @@ see https://angular-ui.github.io/bootstrap
             }
         };
 
+        $scope.validSimpleForm2 = {
+            validate: function (val, options) {
+                // This rule is shared by a group of elements
+                validation.validateGroup(validation.validateGroupOptions(
+                    options, {
+                    pathPrefix: "data",
+                    elements: ["firstName", "surname", "company"]
+                }));
+
+                $scope.validSimpleForm2.message = "First name, surname or company is required";
+                return $scope.data.firstName.trim().length !== 0 ||
+                    $scope.data.surname.trim().length !== 0 ||
+                    $scope.data.company.trim().length !== 0;
+            }
+        };
+
         // Call the validate function before submit to check all rules again
         $scope.submit = function () {
-            validation.validate($scope);
-            console.info("Submit: $scope.simpleForm.$valid =", $scope.simpleForm.$valid);
+            validation.validate($scope, "simpleForm");
+            console.info("submit: $scope.simpleForm.$valid =", $scope.simpleForm.$valid);
             if ($scope.simpleForm.$valid) {
-                alert("form is valid");
+                alert("simpleForm is valid");
+            }
+        };
+
+        $scope.submit2 = function () {
+            validation.validate($scope, "simpleForm2");
+            console.info("submit2: $scope.simpleForm2.$valid =", $scope.simpleForm2.$valid);
+            if ($scope.simpleForm2.$valid) {
+                alert("simpleForm2 is valid");
             }
         };
     };

@@ -241,7 +241,11 @@
                 }
             };
 
-            scope.$on("validate", function() {
+            scope.$on("validate", function(event, options) {
+                if (formName !== options["targetFormName"]) {
+                    return;
+                }
+
                 // Do this in case the users never touched the element,
                 // if not set as dirty the element won't appear on
                 // $scope.formName and element.valid will then error if called.
@@ -355,13 +359,13 @@
 
         /**
          * This can be called from within a custom validation function,
-         * use it to check related elements, i.e. start date and end date.
+         * use it to check a related element, e.g. start date and end date.
          *
          * @param {object} options
          * @param {string} options.formName
          * @param {string} options.rule
          * @param {string} options.path
-         * @param {number} [options.index]
+         * @param {number} [options.index] Used with nested forms
          * @param {boolean} [options.stopPropagation]
          */
         this.validateElement = function(options) {
@@ -378,6 +382,58 @@
                     fn(options.stopPropagation);
                 }
             });
+        };
+
+        /**
+         * This can be called from within a custom validation function,
+         * use it to check multiple related elements,
+         * e.g. only one element in a group of elements is required
+         *
+         * @param {object} options
+         * @param {string} options.formName
+         * @param {string} options.rule
+         * @param {string} [options.pathPrefix]
+         * @param {array} options.elements
+         * @param {number} [options.index] Used with nested forms
+         * @param {boolean} [options.stopPropagation]
+         */
+        this.validateGroup = function(options) {
+            if (options.stopPropagation) {
+                return;
+            }
+
+            options.pathPrefix = options.pathPrefix
+                ? options.pathPrefix + "."
+                : "";
+            angular.forEach(options.elements, function (element) {
+                self.validateElement({
+                    formName: options.formName,
+                    rule: options.rule,
+                    path: options.pathPrefix + element,
+                    index: options.index,
+                    // Assuming the elements all share the custom rule where
+                    // this function is called from, avoid the infinite loop
+                    // that will be caused by propagating the event
+                    stopPropagation: true
+                })
+            });
+        };
+
+        /**
+         * @param {object} options As passed into custom validation rule
+         * @param {object} groupOptions
+         * @param {string} [groupOptions.pathPrefix]
+         * @param {array} groupOptions.elements
+         */
+        this.validateGroupOptions = function(options, groupOptions) {
+            return {
+                formName: options.formName,
+                rule: options.rule,
+                pathPrefix: groupOptions.pathPrefix,
+                elements: groupOptions.elements,
+                index: options.index,
+                stopPropagation: options.stopPropagation
+            }
         };
 
         /**
@@ -399,7 +455,11 @@
          */
         this.setRule = function(scope, form, ruleName, rule) {
             registerForm(scope, form); // TODO Must this be called here?
-            scope.$on("validate", function() {
+            var formName = form.$name;
+            scope.$on("validate", function(event, options) {
+                if (formName !== options["targetFormName"]) {
+                    return;
+                }
                 form.$setValidity(ruleName, rule());
             });
         };
@@ -407,7 +467,7 @@
         /**
         * Create a run-once watch to execute setRules
         * when scope[formName] becomes available.
-        * Inside setRules we can make calls to setRule.
+        * Make calls to setRule inside setFormRules
         *
         * @param scope
         * @param formName
@@ -424,10 +484,14 @@
         * Test all validation rules for the given scope.
         * After calling this function test scope.formName.$valid
         * @param scope
+        * @param [targetFormName] Useful if there is multiple forms on the page
         */
-        this.validate = function(scope) {
+        this.validate = function(scope, targetFormName) {
+            targetFormName = targetFormName || undefined;
             self.enableValidation();
-            scope.$broadcast("validate");
+            scope.$broadcast("validate", {
+                targetFormName: targetFormName
+            });
         };
     }
 
