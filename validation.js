@@ -229,7 +229,7 @@
 
                 if (tooltip) {
                     if (valid) {
-                        scope[tooltip] = tooltipDefault;
+                        $parse(tooltip).assign(scope, tooltipDefault);
                     } else {
                         if (typeof message === "string") {
                             // Use $parse in case tooltip contains a dot,
