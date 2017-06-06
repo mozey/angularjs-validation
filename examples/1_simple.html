@@ -66,7 +66,7 @@ Simple example for https://github.com/mozey/angularjs-validation
         <label for="data.firstName">First Name</label>
         <input type="text"
                id="data.firstName"
-               ng-model="data.firstName" name="data.firstName" validate="validSimpleForm2"
+               ng-model="data.firstName" name="data.firstName" validate="validElementGroup"
                data-uib-tooltip="{{data.tooltip.firstName}}"
                data-tooltip-placement="right">
         <br>
@@ -74,7 +74,7 @@ Simple example for https://github.com/mozey/angularjs-validation
         <label for="data.surname">Surname</label>
         <input type="text"
                id="data.surname"
-               ng-model="data.surname" name="data.surname" validate="validSimpleForm2"
+               ng-model="data.surname" name="data.surname" validate="validElementGroup"
                data-uib-tooltip="{{data.tooltip.surname}}"
                data-tooltip-placement="right">
         <br>
@@ -82,7 +82,7 @@ Simple example for https://github.com/mozey/angularjs-validation
         <label for="data.company">Company</label>
         <input type="text"
                id="data.company"
-               ng-model="data.company" name="data.company" validate="validSimpleForm2"
+               ng-model="data.company" name="data.company" validate="validElementGroup"
                data-uib-tooltip="{{data.tooltip.company}}"
                data-tooltip-placement="right">
         <br>
@@ -155,16 +155,16 @@ see https://angular-ui.github.io/bootstrap
             }
         };
 
-        $scope.validSimpleForm2 = {
+        // This is an element level rule shared by a group of elements
+        $scope.validElementGroup = {
             validate: function (val, options) {
-                // This rule is shared by a group of elements
                 validation.validateGroup(validation.validateGroupOptions(
                     options, {
                     pathPrefix: "data",
                     elements: ["firstName", "surname", "company"]
                 }));
 
-                $scope.validSimpleForm2.message = "First name, surname or company is required";
+                $scope.validElementGroup.message = "First name, surname or company is required";
                 return $scope.data.firstName.trim().length !== 0 ||
                     $scope.data.surname.trim().length !== 0 ||
                     $scope.data.company.trim().length !== 0;
