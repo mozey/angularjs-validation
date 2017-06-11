@@ -1,0 +1,132 @@
+<!--
+Simple example for https://github.com/mozey/angularjs-validation
+---------------------------------------------------------------------------- -->
+
+<!doctype html>
+<html ng-app="app" lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Form Rules</title>
+
+    <style>
+        form label {
+            width: 100px;
+        }
+        form .s_error {
+            color: indianred;
+        }
+    </style>
+
+    <link href="../lib/bootstrap-3.3.7/css/bootstrap.css" rel="stylesheet">
+    <link href="../lib/bootstrap-3.3.7/css/bootstrap-theme.css"
+          rel="stylesheet">
+    <link href="../validation.css" rel="stylesheet">
+</head>
+<body>
+
+<div class="container" ng-controller="MainController">
+    <br>
+    <form action="javascript:" ng-submit="submit()" name="myForm">
+        <span>The form is only valid if the sum of x and y is 42</span><br>
+        <br>
+        <br>
+        <label for="data.x">X</label>
+        <input type="text"
+               id="data.x"
+               ng-model="data.x" name="data.x" validate="number"
+               data-uib-tooltip="{{data.tooltip.x}}"
+               data-tooltip-placement="right">
+        <br>
+        <br>
+        <label for="data.y">Y</label>
+        <input type="text"
+               id="data.y"
+               ng-model="data.y" name="data.y" validate="number"
+               data-uib-tooltip="{{data.tooltip.y}}"
+               data-tooltip-placement="right">
+        <br>
+        <br>
+        <label>Sum:</label><span>&nbsp;{{getNumber("x") + getNumber("y")}}</span>
+        <br>
+        <br>
+        <span ng-class="{invisible: !data.sumMustBe42}">
+            <strong class="s_error">{{data.sumMustBe42}}</strong>&nbsp;
+        </span>
+        <br>
+        <br>
+
+        <button type="submit">Submit</button>
+    </form>
+</div>
+
+<script src="../lib/angular-1.6.4.js"></script>
+<script src="../validation.js"></script>
+
+<!--
+UI Bootstrap 2.5.0 works with Bootstrap CSS version 3.3.7,
+see https://angular-ui.github.io/bootstrap
+-->
+<script src="../lib/ui-bootstrap-tpls-2.5.0.js"></script>
+
+<script>
+
+    angular.module('app', [
+        'ui.bootstrap',
+        'validation'
+    ]);
+
+    angular.module('app.controllers', []);
+
+    var MainController = function ($scope, validation) {
+        console.info("MainController");
+
+        $scope.data = {
+            x: 0,
+            y: 0,
+            tooltip: {
+                x: "",
+                y: ""
+            },
+            sumMustBe42: ""
+        };
+
+        $scope.getNumber = function (v) {
+            var n = Number($scope.data[v]);
+            if (isNaN(n)) {
+                return 0;
+            }
+            return n;
+        };
+
+        // Form level rules are checked when the form is submitted
+        validation.setFormRules($scope, "myForm", function () {
+            validation.setRule($scope, $scope.myForm, "sumMustBe42", function () {
+                var valid =
+                    $scope.getNumber("x") + $scope.getNumber("y") === 42;
+                console.info("valid", valid);
+                if (valid) {
+                    $scope.data.sumMustBe42 = false;
+                } else {
+                    $scope.data.sumMustBe42 = "The answer must be 42";
+                }
+                return valid;
+            });
+        });
+
+        // Call the validate function before submit to check all rules again
+        $scope.submit = function () {
+            validation.validate($scope);
+            console.info("Submit: $scope.myForm.$valid =", $scope.myForm.$valid);
+            if ($scope.myForm.$valid) {
+                alert("form is valid");
+            }
+        };
+    };
+
+    angular.module("app")
+        .controller("MainController", ["$scope", "validation", MainController]);
+
+</script>
+
+</body>
+</html>

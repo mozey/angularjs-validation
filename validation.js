@@ -242,7 +242,8 @@
             };
 
             scope.$on("validate", function(event, options) {
-                if (formName !== options["targetFormName"]) {
+                if (options["targetFormName"] &&
+                    formName !== options["targetFormName"]) {
                     return;
                 }
 
@@ -454,10 +455,13 @@
          * @param rule Must return a boolean
          */
         this.setRule = function(scope, form, ruleName, rule) {
-            registerForm(scope, form); // TODO Must this be called here?
+            // registerForm must also be called here
+            // in case there is no validation directive set
+            registerForm(scope, form);
             var formName = form.$name;
             scope.$on("validate", function(event, options) {
-                if (formName !== options["targetFormName"]) {
+                if (options["targetFormName"] &&
+                    formName !== options["targetFormName"]) {
                     return;
                 }
                 form.$setValidity(ruleName, rule());
