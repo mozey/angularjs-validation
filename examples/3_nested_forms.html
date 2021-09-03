@@ -1,0 +1,179 @@
+<!--
+Nested forms example for https://github.com/mozey/angularjs-validation
+---------------------------------------------------------------------------- -->
+
+<!doctype html>
+<html ng-app="app" lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Nested Forms</title>
+
+    <style>
+        form label {
+            width: 100px;
+        }
+
+        form .s_error {
+            color: indianred;
+        }
+    </style>
+
+    <link href="../lib/bootstrap-3.3.7/css/bootstrap.css" rel="stylesheet">
+    <link href="../lib/bootstrap-3.3.7/css/bootstrap-theme.css"
+          rel="stylesheet">
+    <link href="../validation.css" rel="stylesheet">
+</head>
+<body>
+
+<h3>TODO</h3>
+<div class="container" ng-controller="MainController">
+    <br>
+    <form action="javascript:" ng-submit="submit()" name="myForm"
+          class="form-horizontal">
+
+        <div class="form-group">
+            <span>Dates ranges must not overlap and be continuous</span><br>
+        </div>
+
+        <div class="form-group">
+            <label class="col-sm-1 control-label">
+                Start</label>
+            <div class="col-sm-10">
+                <span datepicker-button>
+                    <input type="text" class="form-control"
+                           ng-model="data.startDate"
+                           name="data.startDate" validate="validStartDate"
+                           tooltip="{{data.tooltip.startDate}}"
+                           datepicker-popup is-open="datepickerOpen">
+                </span>
+            </div>
+        </div>
+
+        <br>
+        <br>
+        <span ng-class="{invisible: !data.continuousDates}">
+            <strong class="s_error">{{data.continuousDates}}</strong>&nbsp;
+        </span>
+        <br>
+        <br>
+
+        <button type="submit">Submit</button>
+    </form>
+</div>
+
+<script src="../lib/angular-1.6.4.js"></script>
+<script src="../validation.js"></script>
+
+<!--
+UI Bootstrap 2.5.0 works with Bootstrap CSS version 3.3.7,
+see https://angular-ui.github.io/bootstrap
+-->
+<script src="../lib/ui-bootstrap-tpls-2.5.0.js"></script>
+
+<script>
+
+    angular.module('app', [
+        'ui.bootstrap',
+        'validation'
+    ]);
+
+    angular.module('app.controllers', []);
+
+    var MainController = function ($scope, validation) {
+        console.info("MainController");
+
+        $scope.data = {
+            startDate: "",
+            tooltip: {
+                startDate: ""
+            }
+        };
+
+        // Form level rules are checked when the form is submitted
+        validation.setFormRules($scope, "myForm", function () {
+            validation.setRule(
+                $scope, $scope.myForm, "continuousDates", function () {
+                    return false;
+                });
+        });
+
+        // Call the validate function before submit to check all rules again
+        $scope.submit = function () {
+            validation.validate($scope);
+            if ($scope.myForm.$valid) {
+                    console.info("Submit: $scope.myForm.$valid =", $scope.myForm.$valid);
+                alert("form is valid");
+            }
+        };
+    };
+
+    angular.module("app")
+        .controller("MainController", ["$scope", "validation", MainController]);
+
+    // Helper directive to create a datepicker with a toggle button
+    angular.module("app").directive("datepickerButton", ["$compile", function ($compile) {
+        var closeDatepickers = [];
+        return {
+            replace: true,
+            // Use child scope
+            // http://stackoverflow.com/a/29880354/639133
+            scope: true,
+            // Compile function reference
+            // http://stackoverflow.com/q/19797419/639133
+            compile: function () {
+                return {
+                    pre: function (scope, elem, attrs) {
+                        if (attrs["ngDisabled"]) {
+                            var disableButton = " ng-disabled=" +
+                                attrs["ngDisabled"] + " ";
+                        }
+
+                        elem.wrap('<span class="input-group"></span>');
+                        var template = '<span class="input-group-btn"><button class="btn btn-default" ng-click="openDatepicker($event)"' + disableButton + '><i class="glyphicon glyphicon-calendar"></i></button></span>';
+                        var compiled = $compile(template)(scope);
+                        elem.after(compiled);
+
+                        scope.closeDatepicker = function () {
+                            scope.datepickerOpen = false;
+                        };
+                        closeDatepickers.push(scope.closeDatepicker);
+
+                        scope.openDatepicker = function ($event) {
+                            // Close all date pickers
+                            angular.forEach(
+                                closeDatepickers,
+                                function (closeDatepicker) {
+                                    closeDatepicker();
+                                });
+
+                            $event.preventDefault();
+                            $event.stopPropagation();
+                            scope.datepickerOpen = true;
+                        };
+                    },
+
+                    post: function (scope, elem) {
+                        var input = elem.find("input");
+                        input.attr("readonly", "readonly");
+
+                        // Get ngModel controller for the angular-ui datepicker
+                        // https://docs.angularjs.org/api/ng/function/angular.element
+                        var ngModel = input.controller("ngModel");
+
+                        // Remove existing parsers otherwise validation
+                        // gets an object when calling ngModel.$modelValue.
+                        ngModel.$parsers = [];
+                        // Parse the view value for use in the model.
+                        ngModel.$parsers.unshift(function (viewValue) {
+                            return viewValue;
+                        });
+                    }
+                };
+            }
+        };
+    }]);
+
+</script>
+
+</body>
+</html>

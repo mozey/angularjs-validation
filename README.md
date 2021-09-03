@@ -2,5 +2,5 @@
 
 Validation service for use with AngularJS forms
 
-### [Examples](http://mozey.co/angularjs-validation/)
+### [Demo](http://mozey.co/examples/angularjs-validation/)
 
